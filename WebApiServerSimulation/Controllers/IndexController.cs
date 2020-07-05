@@ -26,8 +26,10 @@ namespace WebApiServerSimulation.Controllers
                 HttpRequestMessage req = Request;
                 Uri reqUri = req.RequestUri;
                 HttpMethod reqMethod = req.Method;
-                HttpRequestHeaders reqHeaders = req.Headers;
                 HttpContent reqContent = req.Content;
+                HttpRequestHeaders reqHeaders = req.Headers;
+
+                List<KeyValuePair<string, IEnumerable<string>>> headers = reqHeaders.ToList().Concat(reqContent.Headers.ToList()).ToList();
 
                 JObject _input = new JObject();
                 if (reqMethod == HttpMethod.Get || reqMethod == HttpMethod.Delete)
@@ -48,7 +50,7 @@ namespace WebApiServerSimulation.Controllers
                 info += $"\r\n{DateTime.Now.ToString("yyyy/MM/dd HH:mm:ss")}";
                 info += $"\r\n    {reqMethod.Method}, {reqUri.LocalPath}";
                 info += "\r\n    Headers";
-                foreach(var header in reqHeaders)
+                foreach(var header in headers)
                 {
                     if (header.Value == null) continue;
                     info += $"\r\n        {header.Key}: {JsonConvert.SerializeObject(header.Value)}";
