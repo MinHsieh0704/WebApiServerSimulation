@@ -9,7 +9,9 @@ using System.Linq;
 using System.Net;
 using System.Net.Http;
 using System.Net.Http.Headers;
+using System.Runtime.InteropServices;
 using System.Text;
+using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using System.Web;
 using System.Web.Http;
@@ -31,40 +33,45 @@ namespace WebApiServerSimulation.Controllers
 
                 List<KeyValuePair<string, IEnumerable<string>>> headers = reqHeaders.ToList().Concat(reqContent.Headers.ToList()).ToList();
 
-                JObject _input = new JObject();
+                JObject content = new JObject();
                 if (reqMethod == HttpMethod.Get || reqMethod == HttpMethod.Delete)
                 {
                     NameValueCollection input = HttpUtility.ParseQueryString(reqUri.Query);
 
                     foreach (var key in input)
-                        _input.Add(new JProperty(key.ToString(), input[key.ToString()]));
+                    {
+                        List<string> keys = Regex.Split(key.ToString(), @"\.").ToList();
+                        JToken _JToken = content;
+                        for (int i = 0; i < keys.Count(); i++)
+                        {
+                            if (i == keys.Count() - 1) _JToken[keys[i]] = input[key.ToString()];
+                            if (_JToken[keys[i]] == null) _JToken[keys[i]] = new JObject();
+                            _JToken = _JToken[keys[i]];
+                        }
+                    }
                 }
                 else if (reqMethod == HttpMethod.Post || reqMethod == HttpMethod.Put)
                 {
                     string input = reqContent.ReadAsStringAsync().Result;
 
-                    _input = JsonConvert.DeserializeObject<JObject>(input);
+                    content = JsonConvert.DeserializeObject<JObject>(input);
                 }
 
                 string info = "";
                 info += $"\r\n{DateTime.Now.ToString("yyyy/MM/dd HH:mm:ss")}";
                 info += $"\r\n    {reqMethod.Method}, {reqUri.LocalPath}";
-                info += "\r\n    Headers";
+                info += "\r\n    Headers:";
                 foreach(var header in headers)
                 {
                     if (header.Value == null) continue;
                     info += $"\r\n        {header.Key}: {JsonConvert.SerializeObject(header.Value)}";
                 }
-                info += "\r\n    Content";
-                foreach (var input in _input)
-                {
-                    if (input.Value == null) continue;
-                    info += $"\r\n        {input.Key}: {input.Value}";
-                }
+                info += "\r\n    Content:";
+                info += this.ContentInfo(content, 0);
 
                 ConsoleHelper.WriteLine(info, ConsoleHelper.EMode.message);
 
-                return Json(_input);
+                return Json(content);
             }
             catch (Exception ex)
             {
@@ -73,6 +80,51 @@ namespace WebApiServerSimulation.Controllers
                 Program.log.Error(ex);
 
                 return Content(HttpStatusCode.InternalServerError, ex.Message);
+            }
+        }
+
+        /// <summary>
+        /// Content Info
+        /// </summary>
+        /// <param name="content"></param>
+        /// <param name="deep"></param>
+        /// <returns></returns>
+        private string ContentInfo(JObject content, int deep)
+        {
+            try
+            {
+                string info = "";
+                foreach (var input in content.Properties())
+                {
+                    JToken jToken = content[input.Name];
+                    switch (jToken.Type)
+                    {
+                        case JTokenType.Null:
+                            info += $"\r\n{"".PadLeft((deep + 2) * 4, ' ')}{input.Name}: null";
+                            break;
+                        case JTokenType.Object:
+                            info += $"\r\n{"".PadLeft((deep + 2) * 4, ' ')}{input.Name}:";
+                            info += this.ContentInfo(jToken.ToObject<JObject>(), deep + 1);
+                            break;
+                        case JTokenType.Array:
+                            info += $"\r\n{"".PadLeft((deep + 2) * 4, ' ')}{input.Name}:";
+                            for (int i = 0; i < jToken.Count(); i++)
+                            {
+                                info += $"\r\n{"".PadLeft((deep + 3) * 4, ' ')}{i}:";
+                                info += this.ContentInfo(jToken[i].ToObject<JObject>(), deep + 2);
+                            }
+                            break;
+                        default:
+                            info += $"\r\n{"".PadLeft((deep + 2) * 4, ' ')}{input.Name}: {input.Value}";
+                            break;
+                    }
+                }
+
+                return info;
+            }
+            catch (Exception)
+            {
+                throw;
             }
         }
     }
