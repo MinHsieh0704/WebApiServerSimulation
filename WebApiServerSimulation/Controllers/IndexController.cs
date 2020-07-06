@@ -59,14 +59,15 @@ namespace WebApiServerSimulation.Controllers
 
                 string info = "";
                 info += $"\r\n{DateTime.Now.ToString("yyyy/MM/dd HH:mm:ss")}";
-                info += $"\r\n    {reqMethod.Method}, {reqUri.LocalPath}";
-                info += "\r\n    Headers:";
+                info += $"\r\n    Method: {reqMethod.Method}";
+                info += $"\r\n    Path: {reqUri.LocalPath}";
+                info += $"\r\n    Headers:";
                 foreach(var header in headers)
                 {
                     if (header.Value == null) continue;
-                    info += $"\r\n        {header.Key}: {JsonConvert.SerializeObject(header.Value)}";
+                    info += $"\r\n        - {header.Key}: {JsonConvert.SerializeObject(header.Value)}";
                 }
-                info += "\r\n    Content:";
+                info += $"\r\n    Content:";
                 info += this.ContentInfo(content, 0);
 
                 ConsoleHelper.WriteLine(info, ConsoleHelper.EMode.message);
@@ -100,14 +101,14 @@ namespace WebApiServerSimulation.Controllers
                     switch (jToken.Type)
                     {
                         case JTokenType.Null:
-                            info += $"\r\n{"".PadLeft((deep + 2) * 4, ' ')}{input.Name}: null";
+                            info += $"\r\n{"".PadLeft((deep + 2) * 4, ' ')}- {input.Name}: null";
                             break;
                         case JTokenType.Object:
-                            info += $"\r\n{"".PadLeft((deep + 2) * 4, ' ')}{input.Name}:";
+                            info += $"\r\n{"".PadLeft((deep + 2) * 4, ' ')}- {input.Name}:";
                             info += this.ContentInfo(jToken.ToObject<JObject>(), deep + 1);
                             break;
                         case JTokenType.Array:
-                            info += $"\r\n{"".PadLeft((deep + 2) * 4, ' ')}{input.Name}:";
+                            info += $"\r\n{"".PadLeft((deep + 2) * 4, ' ')}- {input.Name}:";
                             for (int i = 0; i < jToken.Count(); i++)
                             {
                                 info += $"\r\n{"".PadLeft((deep + 3) * 4, ' ')}{i}:";
@@ -115,7 +116,7 @@ namespace WebApiServerSimulation.Controllers
                             }
                             break;
                         default:
-                            info += $"\r\n{"".PadLeft((deep + 2) * 4, ' ')}{input.Name}: {input.Value}";
+                            info += $"\r\n{"".PadLeft((deep + 2) * 4, ' ')}- {input.Name}: {input.Value}";
                             break;
                     }
                 }
