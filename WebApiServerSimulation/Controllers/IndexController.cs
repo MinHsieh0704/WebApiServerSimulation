@@ -58,7 +58,6 @@ namespace WebApiServerSimulation.Controllers
                 }
 
                 string info = "";
-                info += $"\r\n{DateTime.Now.ToString("yyyy/MM/dd HH:mm:ss")}";
                 info += $"\r\n    Method: {reqMethod.Method}";
                 info += $"\r\n    Path: {reqUri.LocalPath}";
                 info += $"\r\n    Headers:";
@@ -70,7 +69,8 @@ namespace WebApiServerSimulation.Controllers
                 info += $"\r\n    Content:";
                 info += this.ContentInfo(content, 0);
 
-                ConsoleHelper.WriteLine(info, ConsoleHelper.EMode.message);
+                ConsoleHelper.WriteLine($"\r\n{DateTime.Now.ToString("yyyy/MM/dd HH:mm:ss")}{info}", ConsoleHelper.EMode.message);
+                Program.log.Info($"{info}");
 
                 return Json(content);
             }
