@@ -115,6 +115,11 @@ namespace WebApiServerSimulation.Controllers
                                 info += this.ContentInfo(jToken[i].ToObject<JObject>(), deep + 2);
                             }
                             break;
+                        case JTokenType.Date:
+                            DateTime dt = (DateTime)input.Value;
+                            var a = TimeZoneInfo.ConvertTimeToUtc(dt);
+                            info += $"\r\n{"".PadLeft((deep + 2) * 4, ' ')}- {input.Name}: {a.ToString("yyyy-MM-ddTHH:mm:ss.fffZ")}";
+                            break;
                         default:
                             info += $"\r\n{"".PadLeft((deep + 2) * 4, ' ')}- {input.Name}: {input.Value}";
                             break;
