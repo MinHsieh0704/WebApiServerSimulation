@@ -1,4 +1,5 @@
 ﻿using Min_Helpers;
+using Min_Helpers.PrintHelper;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using System;
@@ -69,16 +70,14 @@ namespace WebApiServerSimulation.Controllers
                 info += $"\r\n    Content:";
                 info += this.ContentInfo(content, 0);
 
-                ConsoleHelper.WriteLine($"\r\n{DateTime.Now.ToString("yyyy/MM/dd HH:mm:ss")}{info}", ConsoleHelper.EMode.message);
-                Program.log.Info($"{info}");
+                Program.PrintService.Log($"{info}", Print.EMode.message);
 
                 return Json(content);
             }
             catch (Exception ex)
             {
                 ex = ExceptionHelper.GetReal(ex);
-                ConsoleHelper.Log($"{ex.Message}", ConsoleHelper.EMode.error);
-                Program.log.Error(ex);
+                Program.PrintService.Log($"{ex.Message}", Print.EMode.error);
 
                 return Content(HttpStatusCode.InternalServerError, ex.Message);
             }
