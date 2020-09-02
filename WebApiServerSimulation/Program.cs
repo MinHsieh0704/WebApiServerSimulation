@@ -1,5 +1,6 @@
 ﻿using Min_Helpers;
 using Min_Helpers.LogHelper;
+using Min_Helpers.PrintHelper;
 using System;
 using System.Globalization;
 using System.IO;
@@ -13,25 +14,24 @@ namespace WebApiServerSimulation
 {
     public class Program
     {
-        public static Log log { get; set; }
+        public static Print PrintService { get; set; } = null;
+        public static Log LogService { get; set; } = null;
 
         static void Main(string[] args)
         {
             Thread.CurrentThread.CurrentCulture = new CultureInfo("en");
             Thread.CurrentThread.CurrentUICulture = new CultureInfo("en");
 
-            ConsoleHelper.Initialize();
-
-            log = new Log();
-            log.Initialize(new FileInfo($"{AppDomain.CurrentDomain.BaseDirectory}log4net.config"));
-
             try
             {
-                ConsoleHelper.Initialize();
+                LogService = new Log();
+                PrintService = new Print(LogService);
 
-                ConsoleHelper.Write("Listen Port: ", ConsoleHelper.EMode.question);
+                LogService.Write("");
+                PrintService.Log("App Start", Print.EMode.info);
+
+                PrintService.Write("Listen Port: ", Print.EMode.question);
                 int port = Convert.ToInt32(Console.ReadLine());
-                log.Info($"Listen Port: {port}");   
 
                 HttpSelfHostConfiguration config = new HttpSelfHostConfiguration($"http://127.0.0.1:{port}");
                 //config.Routes.MapHttpRoute(
@@ -65,13 +65,11 @@ namespace WebApiServerSimulation
             catch (Exception ex)
             {
                 ex = ExceptionHelper.GetReal(ex);
-                ConsoleHelper.WriteLine($"{ex.Message}", ConsoleHelper.EMode.error);
-                log.Error(ex);
+                PrintService.Log($"App Error, {ex.Message}", Print.EMode.error);
             }
             finally
             {
-                ConsoleHelper.WriteLine("End", ConsoleHelper.EMode.info);
-                log.Info("End");
+                PrintService.Log("App End", Print.EMode.info);
                 Console.ReadKey();
 
                 Environment.Exit(0);
