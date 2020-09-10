@@ -54,8 +54,7 @@ namespace WebApiServerSimulation.Controllers
                 else if (reqMethod == HttpMethod.Post || reqMethod == HttpMethod.Put)
                 {
                     string input = reqContent.ReadAsStringAsync().Result;
-
-                    content = JsonConvert.DeserializeObject<JObject>(input);
+                    if (!string.IsNullOrEmpty(input)) content = JsonConvert.DeserializeObject<JObject>(input);
                 }
 
                 string info = "";
@@ -93,6 +92,8 @@ namespace WebApiServerSimulation.Controllers
         {
             try
             {
+                content = content ?? new JObject();
+
                 string info = "";
                 foreach (var input in content.Properties())
                 {
