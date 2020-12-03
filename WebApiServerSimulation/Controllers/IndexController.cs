@@ -67,7 +67,7 @@ namespace WebApiServerSimulation.Controllers
                     info += $"\r\n        - {header.Key}: {JsonConvert.SerializeObject(header.Value)}";
                 }
                 info += $"\r\n    Content:";
-                info += this.ContentInfo(content, 0);
+                info += IndexController.ContentInfo(content, 0);
 
                 Program.PrintService.Log($"{info}", Print.EMode.message);
 
@@ -88,7 +88,7 @@ namespace WebApiServerSimulation.Controllers
         /// <param name="content"></param>
         /// <param name="deep"></param>
         /// <returns></returns>
-        private string ContentInfo(JObject content, int deep)
+        public static string ContentInfo(JObject content, int deep)
         {
             try
             {
@@ -105,14 +105,14 @@ namespace WebApiServerSimulation.Controllers
                             break;
                         case JTokenType.Object:
                             info += $"\r\n{"".PadLeft((deep + 2) * 4, ' ')}- {input.Name}:";
-                            info += this.ContentInfo(jToken.ToObject<JObject>(), deep + 1);
+                            info += IndexController.ContentInfo(jToken.ToObject<JObject>(), deep + 1);
                             break;
                         case JTokenType.Array:
                             info += $"\r\n{"".PadLeft((deep + 2) * 4, ' ')}- {input.Name}:";
                             for (int i = 0; i < jToken.Count(); i++)
                             {
                                 info += $"\r\n{"".PadLeft((deep + 3) * 4, ' ')}{i}:";
-                                info += this.ContentInfo(jToken[i].ToObject<JObject>(), deep + 2);
+                                info += IndexController.ContentInfo(jToken[i].ToObject<JObject>(), deep + 2);
                             }
                             break;
                         case JTokenType.Date:
