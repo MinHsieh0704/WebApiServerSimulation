@@ -12,10 +12,18 @@ using System.Web.Http.SelfHost;
 
 namespace WebApiServerSimulation
 {
+    public class IAccount
+    {
+        public string account { get; set; }
+        public string password { get; set; }
+    }
+
     public class Program
     {
         public static Print PrintService { get; set; } = null;
         public static Log LogService { get; set; } = null;
+
+        public static IAccount basicAuth { get; set; } = null;
 
         static void Main(string[] args)
         {
@@ -30,8 +38,32 @@ namespace WebApiServerSimulation
                 LogService.Write("");
                 PrintService.Log("App Start", Print.EMode.info);
 
+                PrintService.NewLine();
+
+                PrintService.Write("Is Enable Basic Auth Mode? [y/N] ", Print.EMode.question);
+                string readLine = Console.ReadLine();
+                bool isEnabledBasicAuth = !(string.IsNullOrEmpty(readLine) || readLine.ToLower() == "n" || readLine.ToLower() == "no");
+                if (isEnabledBasicAuth)
+                {
+                    PrintService.Write("Basic Auth Account: [Admin] ", Print.EMode.question);
+                    string account = Console.ReadLine();
+
+                    PrintService.Write("Basic Auth Password: [123456] ", Print.EMode.question);
+                    string password = Console.ReadLine();
+
+                    basicAuth = new IAccount()
+                    {
+                        account = string.IsNullOrEmpty(account) ? "Admin" : account,
+                        password = string.IsNullOrEmpty(password) ? "123456" : password
+                    };
+                }
+
+                PrintService.NewLine();
+
                 PrintService.Write("Listen Port: ", Print.EMode.question);
                 int port = Convert.ToInt32(Console.ReadLine());
+
+                PrintService.NewLine();
 
                 HttpSelfHostConfiguration config = new HttpSelfHostConfiguration($"http://127.0.0.1:{port}");
                 //config.Routes.MapHttpRoute(
@@ -39,6 +71,15 @@ namespace WebApiServerSimulation
                 //    routeTemplate: "{controller}/{action}/{id}",
                 //    defaults: new { id = RouteParameter.Optional }
                 //);
+
+                if (isEnabledBasicAuth)
+                {
+                    config.Routes.MapHttpRoute(
+                        name: "BasicAuth",
+                        routeTemplate: "basic-auth/{*url}",
+                        defaults: new { controller = "BasicAuth", action = "Handle" }
+                    );
+                }
 
                 config.Routes.MapHttpRoute(
                     name: "Default",

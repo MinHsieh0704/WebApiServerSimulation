@@ -40,9 +40,9 @@
     <ApplicationManifest>app.manifest</ApplicationManifest>
   </PropertyGroup>
   <ItemGroup>
-    <Reference Include="Min_Helpers, Version=1.0.0.0, Culture=neutral, processorArchitecture=MSIL">
+    <Reference Include="Min_Helpers, Version=1.1.3.0, Culture=neutral, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
-      <HintPath>..\..\..\Min\Min_Helpers\Min_Helpers\bin\Min_Helpers.dll</HintPath>
+      <HintPath>libs\Min_Helpers\Min_Helpers.dll</HintPath>
     </Reference>
     <Reference Include="Newtonsoft.Json, Version=12.0.0.0, Culture=neutral, PublicKeyToken=30ad4fe6b2a6aeed, processorArchitecture=MSIL">
       <HintPath>..\packages\Newtonsoft.Json.12.0.3\lib\net45\Newtonsoft.Json.dll</HintPath>
@@ -69,6 +69,7 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Controllers\BasicAuthController.cs" />
     <Compile Include="Controllers\IndexController.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
@@ -83,4 +84,14 @@
   </ItemGroup>
   <ItemGroup />
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
+  <PropertyGroup>
+    <PreBuildEvent>cd $(ProjectDir)
+rmdir /Q /S $(ProjectDir)$(OutDir)</PreBuildEvent>
+  </PropertyGroup>
+  <PropertyGroup>
+    <PostBuildEvent>cd $(ProjectDir)libs
+for /R %25%25i in (.) do (robocopy %25%25i $(ProjectDir)$(OutDir) *.dll /xo)
+IF %25ERRORLEVEL%25 LEQ 7 exit /b 0
+Rem ELSE exit /b 1</PostBuildEvent>
+  </PropertyGroup>
 </Project>
