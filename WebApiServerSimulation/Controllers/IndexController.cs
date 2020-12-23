@@ -32,6 +32,33 @@ namespace WebApiServerSimulation.Controllers
                 HttpContent reqContent = req.Content;
                 HttpRequestHeaders reqHeaders = req.Headers;
 
+                if (Program.basicAuth != null)
+                {
+                    var auth = reqHeaders.Authorization;
+                    if (auth == null)
+                    {
+                        HttpResponseMessage res = new HttpResponseMessage(HttpStatusCode.Unauthorized);
+                        res.Headers.Add("WWW-Authenticate", "Basic realm=\"User Visible Realm\"");
+                        res.Content = new StringContent("This action requires login.");
+
+                        return ResponseMessage(res);
+                    }
+                    else
+                    {
+                        string authSource = Encoding.UTF8.GetString(Convert.FromBase64String(auth.Parameter));
+                        string account = authSource.Substring(0, authSource.IndexOf(":"));
+                        string password = authSource.Substring(authSource.IndexOf(":") + 1, authSource.Length - authSource.IndexOf(":") - 1);
+
+                        if (account != Program.basicAuth?.account || password != Program.basicAuth?.password)
+                        {
+                            HttpResponseMessage res = new HttpResponseMessage(HttpStatusCode.Unauthorized);
+                            res.Content = new StringContent("Login failed.");
+
+                            return ResponseMessage(res);
+                        }
+                    }
+                }
+
                 List<KeyValuePair<string, IEnumerable<string>>> headers = reqHeaders.ToList().Concat(reqContent.Headers.ToList()).ToList();
 
                 JObject content = new JObject();
