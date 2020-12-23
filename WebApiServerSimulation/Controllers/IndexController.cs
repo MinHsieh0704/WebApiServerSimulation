@@ -22,7 +22,7 @@ namespace WebApiServerSimulation.Controllers
     public class IndexController : ApiController
     {
         [HttpGet, HttpPost, HttpPut, HttpDelete]
-        public IHttpActionResult Handle()
+        public async Task<IHttpActionResult> Handle()
         {
             try
             {
@@ -41,7 +41,7 @@ namespace WebApiServerSimulation.Controllers
                         res.Headers.Add("WWW-Authenticate", "Basic realm=\"User Visible Realm\"");
                         res.Content = new StringContent("This action requires login.");
 
-                        return ResponseMessage(res);
+                        throw new HttpResponseException(res);
                     }
                     else
                     {
@@ -54,7 +54,7 @@ namespace WebApiServerSimulation.Controllers
                             HttpResponseMessage res = new HttpResponseMessage(HttpStatusCode.Unauthorized);
                             res.Content = new StringContent("Login failed.");
 
-                            return ResponseMessage(res);
+                            throw new HttpResponseException(res);
                         }
                     }
                 }
@@ -99,6 +99,19 @@ namespace WebApiServerSimulation.Controllers
                 Program.PrintService.Log($"{info}", Print.EMode.message);
 
                 return Json(content);
+            }
+            catch (HttpResponseException ex)
+            {
+                if (ex.Response.Headers.WwwAuthenticate.Count == 0)
+                {
+                    Program.PrintService.Log($"{ex.Response.StatusCode}, {await ex.Response.Content.ReadAsStringAsync()}", Print.EMode.error);
+                }
+                else
+                {
+                    Program.PrintService.Log($"{ex.Response.StatusCode}, {await ex.Response.Content.ReadAsStringAsync()}", Print.EMode.warning);
+                }
+
+                return ResponseMessage(ex.Response);
             }
             catch (Exception ex)
             {
