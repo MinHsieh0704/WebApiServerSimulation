@@ -72,15 +72,6 @@ namespace WebApiServerSimulation
                 //    defaults: new { id = RouteParameter.Optional }
                 //);
 
-                if (isEnabledBasicAuth)
-                {
-                    config.Routes.MapHttpRoute(
-                        name: "BasicAuth",
-                        routeTemplate: "basic-auth/{*url}",
-                        defaults: new { controller = "BasicAuth", action = "Handle" }
-                    );
-                }
-
                 config.Routes.MapHttpRoute(
                     name: "Default",
                     routeTemplate: "{*url}",
