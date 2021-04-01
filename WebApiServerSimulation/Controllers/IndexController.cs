@@ -151,8 +151,7 @@ namespace WebApiServerSimulation.Controllers
                             info += $"\r\n{"".PadLeft((deep + 2) * 4, ' ')}- {input.Name}:";
                             for (int i = 0; i < jToken.Count(); i++)
                             {
-                                info += $"\r\n{"".PadLeft((deep + 3) * 4, ' ')}{i}:";
-                                info += IndexController.ContentInfo(jToken[i].ToObject<JObject>(), deep + 2);
+                                info += IndexController.ContentInfo(new JObject() { new JProperty(i.ToString(), jToken[i]) }, deep + 1);
                             }
                             break;
                         case JTokenType.Date:
